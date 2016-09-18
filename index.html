@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+  canvas {
+    border: 1px solid gray ;
+    }
+  </style>
+</head>
+<body>
+
+<canvas id="demo" width="300" height="300"></canvas>
+
+<script>
+
+var context =new AudioContext() ;
+var ox = context.createOscillator();
+var oy = context.createOscillator();
+ox.connect(context.destination);
+oy.connect(context.destination);  
+ox.frequency.value = 200 ;
+oy.frequency.value = 20 ;  
+ox.start(1);
+oy.start(1);
+// ox.stop(0);
+// oy.stop(0);
+
+var demo  = {} ;
+
+demo.values = {} ;
+demo.values.interval = 1 ;
+demo.values.count = 1 ;
+
+demo.values.window_height = 300 ;
+demo.values.window_width = 300 ;
+demo.values.clock_height = 240 ;
+demo.values.clock_width = 240 ;
+demo.values.demo =  document.getElementById('demo');
+demo.values.ctx  = demo.values.demo.getContext('2d');
+
+demo.functions = {}
+
+/* called all the time, controls everything else */
+demo.functions.draw = function() {
+  var today = new Date ;
+  var tHour    =  today.getHours() ;
+  var tMin     =  today.getMinutes() ;
+  var tSec     =  today.getSeconds() ;
+  var tMSec    =  today.getMilliseconds() ;
+  var dHour    = ( tHour + tMin/60 + tSec/3600 ) ;
+  var dMin     = ( tSec / 60 )  + tMin ;
+  var dSec     = ( tMSec / 1000 ) + tSec ; 
+
+  dHour = demo.values.count ;
+  demo.values.count += 0.01;
+
+  demo.functions.whiteout() ;
+  demo.functions.draw_face() ;
+  demo.functions.draw_center() ;
+  demo.functions.draw_h_line() ;
+  demo.functions.draw_v_line() ;
+  demo.functions.draw_dots(dHour);
+}
+
+/* converts degrees to radians */
+demo.functions.deg2rad  = function( degrees ) { return ( degrees / 1800 ) * Math.PI ; };
+
+/* gives the X position based on sine */
+demo.functions.xPos     = function( length , time ) { return ( length * Math.sin( demo.functions.deg2rad( 6 * time ) ) ) ; };
+
+/* gives the Y position based on cosine */
+demo.functions.yPos     = function( length , time ) { return ( length * Math.cos( demo.functions.deg2rad( 6 * time ) ) ) ; };
+
+demo.functions.draw_dots = function ( dHour ) {
+  var ctx           = demo.values.ctx ;
+  var height  = demo.values.clock_height ;
+  var width   = demo.values.clock_width ;
+  var cx = height / 2 ;
+  var cy = width / 2 ;
+  var hLen = 100 ;
+  var mx = cx + ( demo.functions.xPos( hLen , dHour * 25 ) ) ;
+  var my = cy - ( demo.functions.yPos( hLen , dHour * 25 ) ) ;
+
+  // console.log([mx.toFixed(2),my.toFixed(2)].join(","));
+  ox.frequency.value = 50 + 1.2 * mx ;
+  oy.frequency.value = 4 * my ;  
+  console.log([
+    ox.frequency.value.toFixed(2),
+    oy.frequency.value.toFixed(2),
+    mx.toFixed(2),
+    my.toFixed(2),
+    ].join("  "));
+
+  ctx.beginPath()
+  ctx.moveTo( 240,my ) ;
+  ctx.lineTo( mx,my ) ;
+  ctx.lineTo( mx,240 ) ;
+  ctx.strokeStyle = "rgb(200,200,200)"; ctx.stroke() ;
+
+  ctx.beginPath()
+  ctx.arc( mx,my, 2 , 0 , Math.PI*2 , true ) ;
+  ctx.strokeStyle = "rgb(200,000,000)"; ctx.stroke() ;
+  ctx.fillStyle   = "rgb(200,000,000)"; ctx.fill() ;
+
+  ctx.beginPath()
+  ctx.arc( mx,240, 2 , 0 , Math.PI*2 , true ) ;
+  ctx.strokeStyle = "rgb(200,000,000)"; ctx.stroke() ;
+  ctx.fillStyle   = "rgb(200,000,000)"; ctx.fill() ;
+
+  ctx.beginPath()
+  ctx.arc( 240,my, 2 , 0 , Math.PI*2 , true ) ;
+  ctx.strokeStyle = "rgb(200,000,000)"; ctx.stroke() ;
+  ctx.fillStyle   = "rgb(200,000,000)"; ctx.fill() ;
+
+}
+
+/* whites out the whole canvas to hide previous work */
+demo.functions.whiteout = function() {
+  var ctx  = demo.values.ctx ;
+  var winx = demo.values.window_height ;
+  var winy = demo.values.window_width ;
+  ctx.beginPath()
+  ctx.moveTo( 0,0 ) ;
+  ctx.lineTo( 0,winy ) ;
+  ctx.lineTo( winx,winy ) ;
+  ctx.lineTo( winx,0 ) ;
+  ctx.lineTo( 0,0 ) ;
+  ctx.strokeStyle = "rgb(255,255,255)"; ctx.stroke() ;
+  ctx.fillStyle   = "rgb(255,255,255)"; ctx.fill() ;
+}
+
+/* draws the face of the clock */
+demo.functions.draw_face = function() {
+  var ctx           = demo.values.ctx ;
+  var clock_height  = demo.values.clock_height ;
+  var clock_width   = demo.values.clock_width ;
+  var cx = clock_height / 2 ;
+  var cy = clock_width / 2 ;
+
+  ctx.beginPath()
+  ctx.arc( cx,cy, 100 , 0 , Math.PI*2 , true ) ;
+  ctx.strokeStyle = "rgb(100,100,100)"; ctx.stroke() ;
+  ctx.fillStyle   = "rgb(245,245,245)"; ctx.fill() ;
+}
+
+/* draws the dot in the center */
+demo.functions.draw_center = function() {
+  var ctx           = demo.values.ctx ;
+  var clock_height  = demo.values.clock_height ;
+  var clock_width   = demo.values.clock_width ;
+  var cx = clock_height / 2 ;
+  var cy = clock_width / 2 ;
+
+  ctx.beginPath()
+  ctx.arc( cx,cy, 2 , 0 , Math.PI*2 , true ) ;
+  ctx.strokeStyle = "rgb(100,100,100)"; ctx.stroke() ;
+  ctx.fillStyle   = "rgb(100,100,100)"; ctx.fill() ;
+}
+
+/* draws the horizontal line on the bottom that shows cosine */
+demo.functions.draw_h_line = function() {
+  var ctx           = demo.values.ctx ;
+  ctx.beginPath()
+  ctx.moveTo(  20,240 ) ;
+  ctx.lineTo( 220,240 ) ;
+  ctx.strokeStyle = "rgb(200,200,200)"; ctx.stroke() ;
+}
+
+/* draws the vertical line on the left that shows sine */
+demo.functions.draw_v_line = function() {
+  var ctx           = demo.values.ctx ;
+  ctx.beginPath()
+  ctx.moveTo( 240,30 ) ;
+  ctx.lineTo( 240,220 ) ;
+  ctx.strokeStyle = "rgb(200,200,200)"; ctx.stroke() ;
+}
+
+/* the part that keeps it going */
+setTimeout( function(){
+  setInterval(
+    function () {demo.functions.draw() } , 
+    demo.values.interval ) ;
+}, 100 ) ;
+
+</script>
+
+</body>
+</html>
