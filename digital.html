@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+  body {
+    text-align: center ;
+    }
+  canvas {
+    border: 1px solid gray ;
+    }
+  #time {
+    font-family: Droid sans mono slashed , sans-serif ;
+    font-size:    240px;
+    line-height:  240px ;
+    margin: 0 auto;
+
+    }
+  </style>
+</head>
+<body>
+
+<h1 id="time">12:00</h1>
+<!-- <canvas id="demo" width="300" height="300"></canvas> -->
+
+<script>
+
+function Tone(context,freq1,freq2) {
+    this.context = context;
+    this.status = 0;
+    this.freq1 = freq1;
+    this.freq2 = freq2;
+}
+
+Tone.prototype.setup = function(){
+    this.osc1 = context.createOscillator();
+    this.osc2 = context.createOscillator();
+    this.osc1.type = 'square' ;
+    this.osc2.type = 'square' ;
+    this.osc1.frequency.value = this.freq1;
+    this.osc2.frequency.value = this.freq2;
+
+    this.gainNode = this.context.createGain();
+    this.gainNode.gain.value = 0.25;
+
+    this.filter = this.context.createBiquadFilter();
+    // this.filter.type = "lowpass";
+    // this.filter.frequency = 8000;
+
+    this.osc1.connect(this.gainNode);
+    this.osc2.connect(this.gainNode);
+
+    this.gainNode.connect(this.filter);
+    this.filter.connect(context.destination);
+}
+
+Tone.prototype.start = function () {
+    this.setup();
+    this.osc1.start(0);
+    this.osc2.start(0);
+    this.status = 1;
+}
+
+Tone.prototype.stop = function () {
+    this.osc1.stop(0);
+    this.osc2.stop(0);
+    this.status = 0;
+}
+
+var context = new AudioContext() ;
+var digital = {} ;
+
+digital.data = {} ;
+digital.data.interval = 1000 ;
+digital.data.frequencies = [];
+digital.data.frequencies[0]   = [120 ,20] ;
+digital.data.frequencies[1]   = [145 ,23] ;
+digital.data.frequencies[2]   = [170 ,33] ;
+digital.data.frequencies[3]   = [190 ,49] ;
+digital.data.frequencies[4]   = [206 ,69] ;
+digital.data.frequencies[5]   = [216 ,94] ;
+digital.data.frequencies[6]   = [220 ,120] ;
+digital.data.frequencies[7]   = [216 ,145] ;
+digital.data.frequencies[8]   = [206 ,169] ;
+digital.data.frequencies[9]   = [190 ,190] ;
+digital.data.frequencies[10]  = [170 ,206] ;
+digital.data.frequencies[11]  = [145 ,216] ;
+digital.data.frequencies[12]  = [120 ,220] ;
+digital.data.frequencies[13]  = [94  ,216] ;
+digital.data.frequencies[14]  = [69  ,206] ;
+digital.data.frequencies[15]  = [49  ,190] ;
+digital.data.frequencies[16]  = [33  ,170] ;
+digital.data.frequencies[17]  = [23  ,145] ;
+digital.data.frequencies[18]  = [20  ,120] ;
+digital.data.frequencies[19]  = [23  ,94] ;
+digital.data.frequencies[20]  = [33  ,69] ;
+digital.data.frequencies[21]  = [49  ,49] ;
+digital.data.frequencies[22]  = [69  ,33] ;
+digital.data.frequencies[23]  = [94  ,23] ;
+
+digital.code = {} ;
+
+
+/* sets the time and makes the sound when needed */
+digital.code.do = function () {
+  // get the time and pull out the parts we need
+  var today = new Date ;
+  var tHour    =  digital.code.pad(today.getHours(),2,'0') ;
+  var tMin     =  digital.code.pad(today.getMinutes(),2,'0') ;
+  var tSec     =  today.getSeconds() ;
+  var time = ( [tHour,tMin].join(':') ) ;
+
+  // put the time where we want it
+  var tElem = document.getElementById('time');
+  tElem.textContent = time;
+
+  // set the freq 
+  var f0 = digital.data.frequencies[tHour][0] ;
+  var f1 = digital.data.frequencies[tHour][1] ;
+
+  // console.log([time, tSec, f0, f1, ].join(' ')) ;
+
+
+  var tone = new Tone( context,f0,f1);
+  // if ( tMin === '00' && tSec === 0 ) {
+  if ( 0 === tMin % 5 && 0 === tSec ) {
+    console.log( 'START' ) ;
+    tone.start();
+
+    setTimeout( function () {
+      console.log('STOP') ;
+      tone.stop();
+      } , 1000 ) ;
+  }
+
+}
+
+/* you don't need a separate library to do zero-padding */
+digital.code.pad = function (n, width, z) {
+  z = z || '0';
+  n = n + '';
+  return n.length >= width ? n : new Array(width - n.length + 1).join(z) + n;
+}
+
+
+/* do it once at the start */
+digital.code.do() ;
+
+/* the part that keeps it going */
+setTimeout( function(){
+  setInterval(
+    function () {digital.code.do() } , 
+    digital.data.interval ) ;
+}, 100 ) ;
+
+</script>
+
+</body>
+</html>

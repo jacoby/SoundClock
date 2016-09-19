@@ -14,16 +14,23 @@
 <script>
 
 var context =new AudioContext() ;
+var gainNode = context.createGain(); 
+
+gainNode.gain.value = 0.1;
+// context.disconnect(gainNode);
+
 var ox = context.createOscillator();
 var oy = context.createOscillator();
 ox.connect(context.destination);
 oy.connect(context.destination);  
+ox.connect(gainNode);
+oy.connect(gainNode);  
 ox.frequency.value = 200 ;
 oy.frequency.value = 20 ;  
 ox.start(1);
 oy.start(1);
-// ox.stop(0);
-// oy.stop(0);
+ox.stop(0);
+oy.stop(0);
 
 var demo  = {} ;
 
@@ -52,24 +59,25 @@ demo.functions.draw = function() {
   var dSec     = ( tMSec / 1000 ) + tSec ; 
 
   dHour = demo.values.count ;
-  demo.values.count += 0.01;
+  demo.values.count += 0.001;
 
   demo.functions.whiteout() ;
   demo.functions.draw_face() ;
   demo.functions.draw_center() ;
   demo.functions.draw_h_line() ;
   demo.functions.draw_v_line() ;
+  demo.functions.draw_hour_markers();
   demo.functions.draw_dots(dHour);
 }
 
 /* converts degrees to radians */
-demo.functions.deg2rad  = function( degrees ) { return ( degrees / 1800 ) * Math.PI ; };
+demo.functions.deg2rad  = function( degrees ) { return ( degrees / 1800 ) * Math.PI ; }
 
 /* gives the X position based on sine */
-demo.functions.xPos     = function( length , time ) { return ( length * Math.sin( demo.functions.deg2rad( 6 * time ) ) ) ; };
+demo.functions.xPos     = function( length , time ) { return ( length * Math.sin( demo.functions.deg2rad( 6 * time ) ) ) ; }
 
 /* gives the Y position based on cosine */
-demo.functions.yPos     = function( length , time ) { return ( length * Math.cos( demo.functions.deg2rad( 6 * time ) ) ) ; };
+demo.functions.yPos     = function( length , time ) { return ( length * Math.cos( demo.functions.deg2rad( 6 * time ) ) ) ; }
 
 demo.functions.draw_dots = function ( dHour ) {
   var ctx           = demo.values.ctx ;
@@ -78,18 +86,28 @@ demo.functions.draw_dots = function ( dHour ) {
   var cx = height / 2 ;
   var cy = width / 2 ;
   var hLen = 100 ;
+  var mungetime = dHour * 15 ;
   var mx = cx + ( demo.functions.xPos( hLen , dHour * 25 ) ) ;
   var my = cy - ( demo.functions.yPos( hLen , dHour * 25 ) ) ;
 
-  // console.log([mx.toFixed(2),my.toFixed(2)].join(","));
   ox.frequency.value = 50 + 1.2 * mx ;
   oy.frequency.value = 4 * my ;  
-  console.log([
-    ox.frequency.value.toFixed(2),
-    oy.frequency.value.toFixed(2),
-    mx.toFixed(2),
-    my.toFixed(2),
-    ].join("  "));
+  if (0 == mungetime.toFixed(2) % 15.00 ) {
+    console.log([
+      mungetime.toFixed(0),
+      ( mungetime.toFixed(0) % 15 ),
+      ( 0 == mungetime.toFixed(0) % 15 ),
+      ox.frequency.value.toFixed(2),
+      oy.frequency.value.toFixed(2),
+      mx.toFixed(2),
+      my.toFixed(2),
+      ].join("  "));
+  }
+
+  ctx.beginPath()
+  ctx.moveTo( cx,cy ) ;
+  ctx.lineTo( mx,my ) ;
+  ctx.strokeStyle = "rgb(200,200,200)"; ctx.stroke() ;
 
   ctx.beginPath()
   ctx.moveTo( 240,my ) ;
@@ -141,6 +159,29 @@ demo.functions.draw_face = function() {
   ctx.arc( cx,cy, 100 , 0 , Math.PI*2 , true ) ;
   ctx.strokeStyle = "rgb(100,100,100)"; ctx.stroke() ;
   ctx.fillStyle   = "rgb(245,245,245)"; ctx.fill() ;
+}
+
+/* draws dot position for the hour points of 24-hour clock */
+demo.functions.draw_hour_markers = function ( ) {
+  var ctx     = demo.values.ctx ;
+  var height  = demo.values.clock_height ;
+  var width   = demo.values.clock_width ;
+  var cx = height / 2 ;
+  var cy = width / 2 ;
+  var hLen = 100 ;
+
+  for ( i = 0 ; i < 24 ; i++ ) {
+    var j = i * 25 ; 
+    var ax = cx + ( demo.functions.xPos( 100 , j ) ) ;
+    var ay = cy - ( demo.functions.yPos( 100 , j ) ) ;
+
+    ctx.beginPath()
+    ctx.arc( ax,ay, 2 , 0 , Math.PI*2 , true ) ;
+    ctx.strokeStyle = "rgb(200,200,200)"; ctx.stroke() ;
+    ctx.fillStyle   = "rgb(200,200,200)"; ctx.fill() ;
+
+    }
+
 }
 
 /* draws the dot in the center */
