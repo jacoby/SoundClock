@@ -4,26 +4,26 @@
   <style>
   body {
     text-align: center ;
+    background-color: #333;
+    color: #6f6;
     }
   canvas {
     border: 1px solid gray ;
     }
   #time {
-    font-family: Droid sans mono slashed , sans-serif ;
-    font-size:    240px;
-    line-height:  240px ;
+    font-family: Consolas , sans-serif ;
+    font-size: 30vw ;
     margin: 0 auto;
-
     }
   </style>
 </head>
 <body>
-
 <h1 id="time">12:00</h1>
-<!-- <canvas id="demo" width="300" height="300"></canvas> -->
 
 <script>
+var context = new AudioContext() ;
 
+// create a Tone class
 function Tone(context,freq1,freq2) {
     this.context = context;
     this.status = 0;
@@ -31,6 +31,7 @@ function Tone(context,freq1,freq2) {
     this.freq2 = freq2;
 }
 
+// tones have required properties
 Tone.prototype.setup = function(){
     this.osc1 = context.createOscillator();
     this.osc2 = context.createOscillator();
@@ -53,6 +54,7 @@ Tone.prototype.setup = function(){
     this.filter.connect(context.destination);
 }
 
+// this is how we start a tone
 Tone.prototype.start = function () {
     this.setup();
     this.osc1.start(0);
@@ -60,17 +62,22 @@ Tone.prototype.start = function () {
     this.status = 1;
 }
 
+// this is how we stop a tone
 Tone.prototype.stop = function () {
     this.osc1.stop(0);
     this.osc2.stop(0);
     this.status = 0;
 }
 
-var context = new AudioContext() ;
+// digital is less a class than object, representing a digital clock
 var digital = {} ;
 
 digital.data = {} ;
+
+// run once a second
 digital.data.interval = 1000 ;
+
+// hardcoded rather than generated for now
 digital.data.frequencies = [];
 digital.data.frequencies[0]   = [120 ,20] ;
 digital.data.frequencies[1]   = [145 ,23] ;
@@ -99,7 +106,6 @@ digital.data.frequencies[23]  = [94  ,23] ;
 
 digital.code = {} ;
 
-
 /* sets the time and makes the sound when needed */
 digital.code.do = function () {
   // get the time and pull out the parts we need
@@ -119,19 +125,18 @@ digital.code.do = function () {
 
   // console.log([time, tSec, f0, f1, ].join(' ')) ;
 
-
   var tone = new Tone( context,f0,f1);
   // if ( tMin === '00' && tSec === 0 ) {
-  if ( 0 === tMin % 5 && 0 === tSec ) {
+  if ( 0 === tMin % 10 && 0 === tSec ) {
     console.log( 'START' ) ;
     tone.start();
 
+    // stop the sound after a second
     setTimeout( function () {
       console.log('STOP') ;
       tone.stop();
       } , 1000 ) ;
   }
-
 }
 
 /* you don't need a separate library to do zero-padding */
@@ -141,16 +146,15 @@ digital.code.pad = function (n, width, z) {
   return n.length >= width ? n : new Array(width - n.length + 1).join(z) + n;
 }
 
-
 /* do it once at the start */
 digital.code.do() ;
 
 /* the part that keeps it going */
-setTimeout( function(){
+// setTimeout( function(){
   setInterval(
     function () {digital.code.do() } , 
     digital.data.interval ) ;
-}, 100 ) ;
+// }, 100 ) ;
 
 </script>
 

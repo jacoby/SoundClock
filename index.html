@@ -58,8 +58,8 @@ demo.functions.draw = function() {
   var dMin     = ( tSec / 60 )  + tMin ;
   var dSec     = ( tMSec / 1000 ) + tSec ; 
 
-  dHour = demo.values.count ;
-  demo.values.count += 0.001;
+  // dHour = demo.values.count ;
+  // demo.values.count += 0.001;
 
   demo.functions.whiteout() ;
   demo.functions.draw_face() ;
@@ -92,17 +92,17 @@ demo.functions.draw_dots = function ( dHour ) {
 
   ox.frequency.value = 50 + 1.2 * mx ;
   oy.frequency.value = 4 * my ;  
-  if (0 == mungetime.toFixed(2) % 15.00 ) {
-    console.log([
-      mungetime.toFixed(0),
-      ( mungetime.toFixed(0) % 15 ),
-      ( 0 == mungetime.toFixed(0) % 15 ),
-      ox.frequency.value.toFixed(2),
-      oy.frequency.value.toFixed(2),
-      mx.toFixed(2),
-      my.toFixed(2),
-      ].join("  "));
-  }
+  // if (0 == mungetime.toFixed(2) % 15.00 ) {
+  //   console.log([
+  //     mungetime.toFixed(0),
+  //     ( mungetime.toFixed(0) % 15 ),
+  //     ( 0 == mungetime.toFixed(0) % 15 ),
+  //     ox.frequency.value.toFixed(2),
+  //     oy.frequency.value.toFixed(2),
+  //     mx.toFixed(2),
+  //     my.toFixed(2),
+  //     ].join("  "));
+  // }
 
   ctx.beginPath()
   ctx.moveTo( cx,cy ) ;
